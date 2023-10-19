@@ -43,8 +43,25 @@ app.get('/client-control-host/clients/:id', async (req, res) => {
 
 app.post('/client-control-host/clients', async (req, res) => {
     const data = req.body;
-    const columns = Object.keys(data).join(', ');
-    const values = Object.values(data);
+
+    if (!data || Object.keys(data).length === 0) {
+        return res.status(400).json({ error: 'Invalid JSON object' });
+    }
+
+    // Filter out keys with empty or undefined values
+    const validData = Object.entries(data)
+        .filter(([key, value]) => value !== undefined && value !== null && value !== '')
+        .reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+        }, {});
+
+    if (Object.keys(validData).length === 0) {
+        return res.status(400).json({ error: 'All values are empty or undefined' });
+    }
+
+    const columns = Object.keys(validData).join(', ');
+    const values = Object.values(validData);
     const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
 
     try {
@@ -52,10 +69,11 @@ app.post('/client-control-host/clients', async (req, res) => {
             `INSERT INTO clients(${columns}) VALUES (${placeholders}) RETURNING *`,
             values
         );
-        res.json(result.rows[0]);
+
+        res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error('Error executing query', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: 'Error inserting data into the database' });
     }
 });
 
