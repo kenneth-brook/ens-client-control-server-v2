@@ -2,9 +2,12 @@ require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const bodyParser = require('body-parser');
 const { Pool } = require('pg');
+const cors = require('cors');
 
 const app = express();
-const port = process.env.PORT
+const port = process.env.PORT;
+
+app.use(cors());
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -29,7 +32,7 @@ app.get('/client-control-host/clients', async (req, res) => {
 app.get('/client-control-host/clients/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const result = await pool.query('SELECT * FROM clients WHERE id = $1', [id]);
+        const result = await pool.query('SELECT * FROM clients WHERE key = $1', [id]);
         if (result.rows.length === 0) {
             res.status(404).json({ error: 'Not Found' });
         } else {
@@ -59,10 +62,10 @@ app.post('/client-control-host/clients', async (req, res) => {
     if (Object.keys(validData).length === 0) {
         return res.status(400).json({ error: 'All values are empty or undefined' });
     }
-
-    const columns = Object.keys(validData).join(', ');
+    //return `${validData}`
+    const columns = Object.keys(validData).join(',');
     const values = Object.values(validData);
-    const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
+    const placeholders = values.map((_, i) => `$${i + 1}`).join(',');
 
     try {
         const result = await pool.query(
@@ -77,25 +80,35 @@ app.post('/client-control-host/clients', async (req, res) => {
     }
 });
 
-app.put('/client-control-host/clients/:id', async (req, res) => {
-    const { id } = req.params;
+app.put('/client-control-host/clients/:key', async (req, res) => {
+    const { key } = req.params; // Extract the key from the route parameter
     const data = req.body;
-    const updates = Object.keys(data).map((key, i) => `${key} = $${i + 1}`).join(', ');
+
+    if (!data || Object.keys(data).length === 0) {
+        return res.status(400).json({ error: 'Invalid JSON object' });
+    }
+
+    const columns = Object.keys(data).join(', ');
+    const values = Object.values(data);
+    const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
 
     try {
         const result = await pool.query(
-            `UPDATE clients SET ${updates} WHERE id = $${Object.keys(data).length + 1} RETURNING *`,
-            [...Object.values(data), id]
+            `UPDATE clients
+             SET (${columns}) = (${placeholders})
+             WHERE key = $${values.length + 1}
+             RETURNING *`,
+            [...values, key]
         );
 
-        if (result.rows.length === 0) {
-            res.status(404).json({ error: 'Not Found' });
-        } else {
-            res.json(result.rows[0]);
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Record not found' });
         }
+
+        res.json(result.rows[0]);
     } catch (error) {
         console.error('Error executing query', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: 'Error updating data in the database' });
     }
 });
 
