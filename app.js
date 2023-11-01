@@ -10,7 +10,7 @@ app.use(cors());
 
 const pool = new Pool({
     user: 'ensclient',
-    host: 'ens-client.cfzb4vlbttqg.us-east-2.rds.amazonaws.com',
+    host: 'ip-172-31-47-195.us-east-2.compute.internal',
     database: 'ens-client',
     password: 'gQ9Sf8cIczKhZiCswXXy',
     port: 5432,
