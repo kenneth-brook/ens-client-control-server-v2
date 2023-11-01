@@ -18,7 +18,7 @@ const pool = new Pool({
 
 app.use(bodyParser.json());
 
-app.get('/client-control-host/clients', async (req, res) => {
+app.get('/clients', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM clients');
         res.json(result.rows);
@@ -28,7 +28,7 @@ app.get('/client-control-host/clients', async (req, res) => {
     }
 });
 
-app.get('/client-control-host/clients/:id', async (req, res) => {
+app.get('/clients/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const result = await pool.query('SELECT * FROM clients WHERE key = $1', [id]);
@@ -43,7 +43,7 @@ app.get('/client-control-host/clients/:id', async (req, res) => {
     }
 });
 
-app.post('/client-control-host/clients', async (req, res) => {
+app.post('/clients', async (req, res) => {
     const data = req.body;
 
     if (!data || Object.keys(data).length === 0) {
@@ -79,7 +79,7 @@ app.post('/client-control-host/clients', async (req, res) => {
     }
 });
 
-app.put('/client-control-host/clients/:key', async (req, res) => {
+app.put('/clients/:key', async (req, res) => {
     const { key } = req.params; // Extract the key from the route parameter
     const data = req.body;
 
