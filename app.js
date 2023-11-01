@@ -16,7 +16,9 @@ const pool = new Pool({
     port: 5432,
 });
 
-app.use(bodyParser.json());
+app.use(bodyParser.json()) 
+
+app.get('/', async(req, res) => res.json('working') );
 
 app.get('/clients', async (req, res) => {
     try {
