@@ -1,4 +1,3 @@
-require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const bodyParser = require('body-parser');
 const { Pool } = require('pg');
@@ -10,11 +9,11 @@ const port = process.env.PORT;
 app.use(cors());
 
 const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASS,
-    port: process.env.DB_PORT,
+    user: 'ensclient',
+    host: 'ens-client.cfzb4vlbttqg.us-east-2.rds.amazonaws.com',
+    database: 'ens-client',
+    password: 'gQ9Sf8cIczKhZiCswXXy',
+    port: 5432,
 });
 
 app.use(bodyParser.json());
