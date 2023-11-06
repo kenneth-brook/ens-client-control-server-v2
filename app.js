@@ -6,7 +6,7 @@ const cors = require('cors');
 const app = express();
 const port = 3333;
 
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
 
 const pool = new Pool({
     user: 'ensclient',
